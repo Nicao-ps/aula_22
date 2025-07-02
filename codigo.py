@@ -3,18 +3,16 @@ import pandas as pd
 import numpy as np
 
 
-entrada = input('\nInforme a entrada de dados [csv / sql]:')
+entrada = input('\nInforme a entrada de dados [csv / sql]: ')
 
 try:
 	if entrada == 'csv':
 		CAMINHO_ARQUIVO_1 = './BaseDP.csv'
-		df_serie_1 = pd.read_csv(CAMINHO_ARQUIVO_1 , sep=';', encoding='iso-8859-1')
+		df_serie_1 = pd.read_csv(CAMINHO_ARQUIVO_1, sep=';', encoding='utf-8')
 		df_serie_1.columns = [col.strip().replace('ï»¿cod_ocorrencia', 'cod_ocorrencia') for col in df_serie_1.columns]
 		CAMINHO_ARQUIVO_2 = './BaseDP_Roubo_Coletivo.csv'
-		df_serie_2 = pd.read_csv(CAMINHO_ARQUIVO_2 , sep=';', encoding='iso-8859-1')
+		df_serie_2 = pd.read_csv(CAMINHO_ARQUIVO_2, sep=';', encoding='utf-8')
 		df_serie_2.columns = [col.strip().replace('ï»¿cod_ocorrencia', 'cod_ocorrencia') for col in df_serie_2.columns]
-		print('Coletando dados para análise...')
-		df_novo = pd.merge(df_serie_1, df_serie_2, on='cod_ocorrencia')  # on='coluna no dataframe'
 
 	elif entrada == 'sql':
 		host = 'localhost'
@@ -23,14 +21,17 @@ try:
 		database = 'roubo_coletivo'
 		engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}/{database}')
 		df_serie_1 = pd.read_sql('basedp', engine)
+		print(df_serie_1.head())
 		df_serie_2 = pd.read_sql('basedp_roubo_coletivo', engine)
-		print('Coletando dados para análise...')
-		df_novo = pd.merge(df_serie_1, df_serie_2, on='cod_ocorrencia')  # on='coluna no dataframe'
+		print(df_serie_2.head())
+
 
 except Exception as e:
 	print(f'Erro Irmão, faz dnv pprt, seu erro foi: {e}')
 	exit()
 
+print('\nColetando dados para análise...\n')
+df_novo = pd.merge(df_serie_1, df_serie_2, on='cod_ocorrencia')  # on='coluna no dataframe'
 df_novo_filtrado = df_novo[(df_novo['ano'] >= 2022) & (df_novo['ano'] <= 2023)]
 print(df_novo_filtrado)
 
@@ -103,18 +104,7 @@ else:
 try:
 	import matplotlib.pyplot as plt
 	
-	fig, ax = plt.subplots(1, 2, figsize=(18, 6))
 
-	if not df_roubo_coletivo_menores_outliers.empty:
-		lower_data = df_roubo_coletivo_menores_outliers.sort_values(by='roubo_em_coletivo', ascending=True)
-		ax[0].barh(dados_inferiores['munic'], dados_inferiores['roubo_veiculo'], color='#FF6000')
-		
-	else:
-		dados_inferiores = df_roubo_veiculo_minors_outliers.sort_values(by='roubo_veiculo', ascending=False)
-		ax[0].bar(dados_inferiores['munic'], dados_inferiores['roubo_veiculo'], color='#FF6000')
-		ax[0].set_title('Menores Roubos')
-		ax[0].set_xticks([])
-		ax[0].set_yticks([])
 
 	plt.tight_layout()
 	plt.show()
