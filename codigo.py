@@ -20,14 +20,13 @@ try:
 		password = ''
 		database = 'roubo_coletivo'
 		engine = create_engine(f'mysql+pymysql://{user}:{password}@{host}/{database}')
-		df_serie_1 = pd.read_sql('basedp', engine)
-		print(df_serie_1.head())
-		df_serie_2 = pd.read_sql('basedp_roubo_coletivo', engine)
-		print(df_serie_2.head())
+		df_serie_1 = pd.read_sql_query('SELECT * FROM basedp', engine)
+		df_serie_2 = pd.read_sql_query('SELECT * FROM basedp_roubo_coletivo', engine)
+
 
 
 except Exception as e:
-	print(f'Erro Irmão, faz dnv pprt, seu erro foi: {e}')
+	print(f'Erro! {e}')
 	exit()
 
 print('\nColetando dados para análise...\n')

@@ -1,1 +1,1 @@
-print(df_novo)
+entrada = input('\nInforme a entrada de dados [csv / sql]: ')
