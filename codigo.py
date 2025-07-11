@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 
 
-print('\n\n'+'Bem vindo analista em formação!'+'\n')
-
-
 entrada = input('\nInforme o formato desejado para os dados de entrada [csv / sql]: ')
 
 
@@ -66,6 +63,8 @@ print(f'Média de roubo em coletivos: {media:.2f}')
 mediana = np.median(array_roubo_coletivo)
 print(f'Mediana de roubo em coletivos: {mediana:.2f}')
 
+distancia_abs = np.abs((media - mediana) / mediana)
+print(f'Distância absoluta: {distancia_abs:.2f}')
 
 # medidas de posição da série
 print('\n'+('-'*18))
@@ -74,17 +73,15 @@ print(('-'*18)+'\n')
 
 
 # quantis da serie
-print(('-'*7))
-print('Quantis')
-print(('-'*7))
-
 list_q = []
-qtt_q = int(input('\n'+'Quantis utilizados para análise: '))
+qtt_q = int(input('Quantis utilizados para análise: '))
 print('')
 for i in range(qtt_q):
 	q = float(input(f'Informe o q{i + 1}: '))
 	list_q.append(q)
-print('')
+print('\n'+('-'*7))
+print('Quantis')
+print(('-'*7))
 for i in range(qtt_q):
 	print(f'q{i + 1} = {np.quantile(array_roubo_coletivo, list_q[i], method="weibull"):.2f}')
 print('')
@@ -107,8 +104,6 @@ print(f'Limite superior: {mayor_limit:.2f}')
 # limite inferior da serie
 minor_limit = np.quantile(array_roubo_coletivo, list_q[0], method="weibull") - (1.5 * iqr)
 print(f'Limite inferior: {minor_limit:.2f}')
-
-input('\nImprimir maiores e menores? [s/n]: ')
 
 # maiores da serie
 print('\nMaiores:\n')
@@ -141,10 +136,53 @@ else:
 
 try:
 	import matplotlib.pyplot as plt
-	
 
+	plt.figure(figsize=(18, 10))
+	plt.suptitle('Roubos em Coletivo nos anos de 2022 e de 2023 no Estado do RJ', fontsize=16)
+
+	# 1. Outliers Superiores
+	plt.subplot(2, 2, 1)
+	plt.title('Ranking: BPMs com maior número de casos de Roubo em Coletivo em 2022 e 2023')
+	if not df_roubo_coletivo_maiores_outliers.empty:
+		dados = df_roubo_coletivo_maiores_outliers.sort_values(by='roubo_em_coletivo', ascending=True)
+		barras = plt.barh(dados['munic'], dados['roubo_em_coletivo'], color='blue')
+		plt.bar_label(barras, fmt='%.0f', label_type='edge', fontsize=8, padding=2)
+		plt.xlabel('Total Roubos Coletivos')
+	else:
+		plt.text(0.5, 0.5, 'Sem outliers superiores', ha='center', va='center')
+
+	# 2. Histograma
+	plt.subplot(2, 2, 2)
+	plt.title('Histograma: Número de BPMs para cada 250 casos de Roubo em Coletivo em 2022 e 2023')
+	plt.hist(array_roubo_coletivo, bins=30, color='orange')
+	plt.axvline(media, color='black', linestyle='dashed', linewidth=2, label=f'Média: {media:.2f}')
+	plt.xlabel('Roubos em Coletivo')
+	plt.ylabel('Número de Municípios')
+
+	# 3. Boxplot
+	plt.subplot(2, 2, 3)
+	plt.title('Boxplot dos Roubos em Coletivo por BPM em 2022 e 2023')
+	plt.boxplot(array_roubo_coletivo, vert=False, showmeans=True)
+	
+	# POSIÇÃO 04
+    # MEDIDAS 
+	plt.subplot(2, 2, 4)
+	plt.title('Medidas de Tendência Central e de Posição')
+	plt.text(0.1, 0.9, f'Média: {media:.2f}', fontsize=10)
+	plt.text(0.1, 0.8, f'Mediana: {mediana:.2f}', fontsize=10)
+	plt.text(0.1, 0.7, f'Distância absoluta: {distancia_abs:.2f}', fontsize=10)
+	plt.text(0.1, 0.6, f'q1: {np.quantile(array_roubo_coletivo, list_q[0], method="weibull"):.2f}', fontsize=10)
+	plt.text(0.1, 0.5, f'q3: {np.quantile(array_roubo_coletivo, list_q[qtt_q - 1], method="weibull"):.2f}', fontsize=10)
+	plt.text(0.1, 0.4, f'Intervalo interquartil: {iqr:.2f}', fontsize=10)
+	plt.text(0.1, 0.3, f'Limite inferior: {minor_limit:.2f}', fontsize=10)
+	plt.text(0.1, 0.2, f'Limite superior: {mayor_limit:.2f}', fontsize=10)
+	plt.text(0.1, 0.1, f'Número de BPMs: {df_roubo_coletivo["munic"].nunique()}', fontsize=10)
+
+	plt.xticks([])
+	plt.yticks([])
 
 	plt.tight_layout()
+	plt.subplots_adjust(top=0.90)  # espaço para o suptitle
 	plt.show()
 
 except Exception as e:
